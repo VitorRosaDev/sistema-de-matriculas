@@ -44,8 +44,7 @@ router.post('/', Auth.exigirPerfil('secretaria'), async (req, res) => {
     status: 'aberta',
     criadaEm: FieldValue.serverTimestamp(),
   });
-  const [detalhada] = (await montar.turmasDetalhadas(dados.semestre)).filter((t) => t.id === criada.id);
-  res.status(201).json(detalhada);
+  res.status(201).json(await montar.turmaDetalhada(criada.id));
 });
 
 router.patch('/:id', Auth.exigirPerfil('secretaria'), async (req, res) => {
@@ -54,8 +53,7 @@ router.patch('/:id', Auth.exigirPerfil('secretaria'), async (req, res) => {
   const atual = await repo.obter('turmas', req.params.id);
   if (!atual) throw new ErroHttp(404, 'Turma não encontrada.');
   await repo.atualizar('turmas', atual.id, { status });
-  const [detalhada] = (await montar.turmasDetalhadas(atual.semestre)).filter((t) => t.id === atual.id);
-  res.json(detalhada);
+  res.json(await montar.turmaDetalhada(atual.id));
 });
 
 router.delete('/:id', Auth.exigirPerfil('secretaria'), async (req, res) => {
