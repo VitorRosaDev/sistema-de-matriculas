@@ -82,7 +82,8 @@ router.put('/:matricula', Auth.exigirDono('matricula'), async (req, res) => {
 router.put('/:matricula/senha', Auth.exigirDono('matricula'), async (req, res) => {
   const aluno = await carregarAluno(req.params.matricula);
   const { senhaAtual, senhaNova } = req.body || {};
-  if (!(await Senha.conferir(senhaAtual, aluno))) throw new ErroHttp(401, 'A senha atual não confere.');
+  // 403, e não 401: o aluno ESTÁ autenticado. 401 significa "sem sessão", e o front encerra a sessão ao recebê-lo.
+  if (!(await Senha.conferir(senhaAtual, aluno))) throw new ErroHttp(403, 'A senha atual não confere.');
   const erro = Validacao.validarSenhaNova(senhaNova);
   if (erro) throw new ErroHttp(400, erro);
   if (senhaNova === senhaAtual) throw new ErroHttp(400, 'A nova senha deve ser diferente da atual.');

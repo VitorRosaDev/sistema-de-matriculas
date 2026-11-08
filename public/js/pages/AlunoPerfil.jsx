@@ -90,6 +90,7 @@ class AlunoPerfil extends React.Component {
     if (!senhaAtual) errosSenha.senhaAtual = 'Informe a senha atual.';
     const erroNova = Validacao.validarSenhaNova(senhaNova);
     if (erroNova) errosSenha.senhaNova = erroNova;
+    else if (senhaNova === senhaAtual) errosSenha.senhaNova = 'A nova senha deve ser diferente da atual.';
     if (senhaNova !== confirmar) errosSenha.confirmar = 'As senhas não são iguais.';
     this.setState({ errosSenha, erro: '', sucesso: '' });
     if (Validacao.temErros(errosSenha)) return;
@@ -97,7 +98,8 @@ class AlunoPerfil extends React.Component {
     this.setState({ salvandoSenha: true });
     Api.alterarSenha(this.context.usuario.id, { senhaAtual, senhaNova })
       .then(() => this.setState({ sucesso: 'Senha alterada.', senhas: { senhaAtual: '', senhaNova: '', confirmar: '' } }))
-      .catch((e) => this.setState({ errosSenha: { senhaAtual: e.message.includes('atual') ? e.message : undefined }, erro: e.message.includes('atual') ? '' : e.message }))
+      // 403 = senha atual recusada: o erro vai para o campo. Qualquer outro vai para o alerta geral.
+      .catch((e) => this.setState(e.status === 403 ? { errosSenha: { senhaAtual: e.message } } : { erro: e.message }))
       .finally(() => this.setState({ salvandoSenha: false }));
   }
 

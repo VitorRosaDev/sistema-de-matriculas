@@ -37,7 +37,7 @@ class AlunoOfertas extends React.Component {
 
   matricular(turma) {
     this.setState({ erro: '', sucesso: '', enviando: true });
-    Api.matricular(this.context.usuario.id, turma.id)
+    Api.matricular(turma.id)
       .then(() => { this.setState({ sucesso: 'Matrícula realizada em ' + turma.disciplina.nome + '.' }); return this.carregar(); })
       .catch((e) => { this.setState({ erro: e.message }); return this.carregar(); }) // o servidor é a palavra final (ex.: lotou agora)
       .finally(() => this.setState({ enviando: false }));
