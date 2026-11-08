@@ -23,7 +23,18 @@ function versaoDosFontes() {
   return Math.max(...ORDEM.map((f) => fs.statSync(path.join(RAIZ, f)).mtimeMs));
 }
 
+// Um arquivo criado em public/js e esquecido na ORDEM só apareceria como ReferenceError no navegador.
+// Aqui o aviso sai no console do servidor, na compilação (ao subir e sempre que um fonte da ORDEM muda).
+function avisarForaDaOrdem() {
+  const listados = new Set(ORDEM);
+  const esquecidos = fs.readdirSync(RAIZ, { recursive: true })
+    .map((f) => f.split(path.sep).join('/'))
+    .filter((f) => /\.jsx?$/.test(f) && !listados.has(f));
+  if (esquecidos.length) console.warn('Aviso (bundle): fora da ORDEM de server/bundle.js, não entram em /js/app.js: ' + esquecidos.join(', '));
+}
+
 function compilar() {
+  avisarForaDaOrdem();
   const fontes = ORDEM.map((f) => '/* ' + f + ' */\n' + fs.readFileSync(path.join(RAIZ, f), 'utf8'));
   // Sem `format`: nomes de topo (classes, constantes) continuam globais, como nos scripts separados.
   return esbuild.transformSync(fontes.join('\n'), { loader: 'jsx', minify: true, target: 'es2020', legalComments: 'none' }).code;
