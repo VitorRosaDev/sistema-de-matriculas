@@ -6,7 +6,7 @@ const Regras = require('../../public/js/shared/regras.js');
 const Horario = require('../../public/js/shared/horario.js');
 const montar = require('../montar');
 const Auth = require('../autenticacao');
-const { ErroHttp } = require('../erros');
+const { ErroHttp, exigirValido } = require('../erros');
 
 const router = express.Router();
 
@@ -25,8 +25,7 @@ router.post('/', Auth.exigirPerfil('secretaria'), async (req, res) => {
     vagas: c.vagas,
     semestre: c.semestre || Horario.SEMESTRE_ATUAL,
   };
-  const erros = Validacao.validarTurma(dados);
-  if (Validacao.temErros(erros)) throw new ErroHttp(400, Object.values(erros).join(' '));
+  exigirValido(Validacao.validarTurma(dados));
 
   const [disciplina, professor] = await Promise.all([
     repo.obter('disciplinas', dados.disciplinaId),

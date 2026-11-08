@@ -5,6 +5,12 @@ class ErroHttp extends Error {
   }
 }
 
+// `erros` é o objeto { campo: mensagem } de shared/validacao.js. Se não estiver vazio, a requisição para com 400.
+function exigirValido(erros) {
+  const mensagens = Object.values(erros);
+  if (mensagens.length) throw new ErroHttp(400, mensagens.join(' '));
+}
+
 function naoEncontradoApi(req, res, next) {
   next(new ErroHttp(404, 'Rota não encontrada.'));
 }
@@ -20,4 +26,4 @@ function tratarErros(err, req, res, next) {
   res.status(500).json({ erro: 'Erro interno do servidor.' });
 }
 
-module.exports = { ErroHttp, naoEncontradoApi, tratarErros };
+module.exports = { ErroHttp, exigirValido, naoEncontradoApi, tratarErros };

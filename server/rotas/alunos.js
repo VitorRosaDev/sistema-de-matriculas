@@ -7,11 +7,10 @@ const Validacao = require('../../public/js/shared/validacao.js');
 const Horario = require('../../public/js/shared/horario.js');
 const montar = require('../montar');
 const Auth = require('../autenticacao');
-const { ErroHttp } = require('../erros');
+const Normalizar = require('../normalizar');
+const { ErroHttp, exigirValido } = require('../erros');
 
 const router = express.Router();
-
-const mensagem = (erros) => Object.values(erros).join(' ');
 
 async function carregarAluno(matricula) {
   if (!Validacao.REGEX.matricula.test(matricula)) throw new ErroHttp(400, 'Matrícula inválida.');
@@ -29,15 +28,14 @@ async function emailEmUso(email, ignorarId) {
 router.post('/', async (req, res) => {
   const c = req.body || {};
   const dados = {
-    nome: typeof c.nome === 'string' ? c.nome.trim().replace(/\s+/g, ' ') : c.nome,
-    endereco: typeof c.endereco === 'string' ? c.endereco.trim() : c.endereco,
+    nome: Normalizar.nome(c.nome),
+    endereco: Normalizar.aparar(c.endereco),
     dataNascimento: c.dataNascimento,
-    email: typeof c.email === 'string' ? c.email.trim().toLowerCase() : c.email,
+    email: Normalizar.email(c.email),
     telefone: Validacao.soDigitos(c.telefone),
     senha: c.senha,
   };
-  const erros = Validacao.validarCadastro(dados);
-  if (Validacao.temErros(erros)) throw new ErroHttp(400, mensagem(erros));
+  exigirValido(Validacao.validarCadastro(dados));
   if (await emailEmUso(dados.email)) throw new ErroHttp(409, 'Já existe um cadastro com este e-mail.');
 
   const { senha, ...semSenha } = dados;
@@ -69,12 +67,11 @@ router.put('/:matricula', Auth.exigirDono('matricula'), async (req, res) => {
   const aluno = await carregarAluno(req.params.matricula);
   const c = req.body || {};
   const dados = {
-    endereco: typeof c.endereco === 'string' ? c.endereco.trim() : c.endereco,
-    email: typeof c.email === 'string' ? c.email.trim().toLowerCase() : c.email,
+    endereco: Normalizar.aparar(c.endereco),
+    email: Normalizar.email(c.email),
     telefone: Validacao.soDigitos(c.telefone),
   };
-  const erros = Validacao.validarContato(dados);
-  if (Validacao.temErros(erros)) throw new ErroHttp(400, mensagem(erros));
+  exigirValido(Validacao.validarContato(dados));
   if (await emailEmUso(dados.email, aluno.id)) throw new ErroHttp(409, 'Já existe um cadastro com este e-mail.');
   res.json(Senha.publico(await repo.atualizar('alunos', aluno.id, dados)));
 });
@@ -97,7 +94,7 @@ router.post('/:matricula/solicitacoes', Auth.exigirDono('matricula'), async (req
   const aluno = await carregarAluno(req.params.matricula);
   const { campo, valorNovo } = req.body || {};
   if (!['nome', 'dataNascimento'].includes(campo)) throw new ErroHttp(400, 'Só nome e data de nascimento dependem de autorização.');
-  const valor = typeof valorNovo === 'string' ? valorNovo.trim().replace(/\s+/g, ' ') : valorNovo;
+  const valor = Normalizar.nome(valorNovo);
   if (campo === 'nome' && !Validacao.nomeCompleto(valor)) throw new ErroHttp(400, 'Informe o nome completo (nome e sobrenome, só letras).');
   if (campo === 'dataNascimento' && !Validacao.dataValida(valor)) throw new ErroHttp(400, 'Data de nascimento inválida.');
   if (valor === aluno[campo]) throw new ErroHttp(400, 'O valor informado é igual ao atual.');
