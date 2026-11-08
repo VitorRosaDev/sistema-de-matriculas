@@ -37,7 +37,7 @@ class AlunoOfertas extends React.Component {
 
   matricular(turma) {
     this.setState({ erro: '', sucesso: '', enviando: true });
-    Api.matricular(this.context.usuario.id, turma.id)
+    Api.matricular(turma.id)
       .then(() => { this.setState({ sucesso: 'Matrícula realizada em ' + turma.disciplina.nome + '.' }); return this.carregar(); })
       .catch((e) => { this.setState({ erro: e.message }); return this.carregar(); }) // o servidor é a palavra final (ex.: lotou agora)
       .finally(() => this.setState({ enviando: false }));
@@ -45,10 +45,7 @@ class AlunoOfertas extends React.Component {
 
   cancelar(m) {
     if (!window.confirm('Cancelar a matrícula em ' + m.turma.disciplina.nome + '?')) return;
-    this.setState({ erro: '', sucesso: '' });
-    Api.cancelarMatricula(m.id)
-      .then(() => { this.setState({ sucesso: 'Matrícula em ' + m.turma.disciplina.nome + ' cancelada.' }); return this.carregar(); })
-      .catch((e) => this.setState({ erro: e.message }));
+    executarAcao(this, Api.cancelarMatricula(m.id), 'Matrícula em ' + m.turma.disciplina.nome + ' cancelada.');
   }
 
   render() {
@@ -68,8 +65,7 @@ class AlunoOfertas extends React.Component {
     return (
       <div>
         <TituloPagina icone="bi-pencil-square" titulo="Matrícula" subtitulo={'Turmas ofertadas em ' + Horario.SEMESTRE_ATUAL + '. Cada bloqueio mostra o motivo.'} />
-        <Alerta tipo="danger" mensagem={erro} onFechar={() => this.setState({ erro: '' })} />
-        <Alerta tipo="success" mensagem={sucesso} onFechar={() => this.setState({ sucesso: '' })} />
+        <Avisos erro={erro} sucesso={sucesso} aoFechar={(aviso) => this.setState({ [aviso]: '' })} />
 
         {carregando ? <Carregando texto="Carregando turmas…" /> : (
           <div className="row g-4">

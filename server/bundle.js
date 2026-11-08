@@ -9,7 +9,7 @@ const RAIZ = path.join(__dirname, '..', 'public', 'js');
 const ORDEM = [
   'shared/horario.js', 'shared/validacao.js', 'shared/regras.js', 'shared/formatos.js', 'services/api.js',
   'context/SessaoContext.jsx',
-  'components/Logo.jsx', 'components/Alerta.jsx', 'components/Estados.jsx', 'components/Campo.jsx', 'components/ErrorBoundary.jsx',
+  'components/Logo.jsx', 'components/Alerta.jsx', 'components/Avisos.jsx', 'components/StatusSolicitacao.jsx', 'components/Estados.jsx', 'components/Campo.jsx', 'components/ErrorBoundary.jsx',
   'components/Navbar.jsx', 'components/BarraCarga.jsx', 'components/GradeHorario.jsx', 'components/CardTurma.jsx',
   'pages/Login.jsx', 'pages/Cadastro.jsx', 'pages/AlunoPerfil.jsx', 'pages/AdminSolicitacoes.jsx', 'pages/AdminDisciplinas.jsx',
   'pages/AdminProfessores.jsx', 'pages/AdminTurmas.jsx', 'pages/AdminAlocacao.jsx', 'pages/AlunoOfertas.jsx', 'pages/AlunoGrade.jsx',
@@ -23,7 +23,18 @@ function versaoDosFontes() {
   return Math.max(...ORDEM.map((f) => fs.statSync(path.join(RAIZ, f)).mtimeMs));
 }
 
+// Um arquivo criado em public/js e esquecido na ORDEM só apareceria como ReferenceError no navegador.
+// Aqui o aviso sai no console do servidor, na compilação (ao subir e sempre que um fonte da ORDEM muda).
+function avisarForaDaOrdem() {
+  const listados = new Set(ORDEM);
+  const esquecidos = fs.readdirSync(RAIZ, { recursive: true })
+    .map((f) => f.split(path.sep).join('/'))
+    .filter((f) => /\.jsx?$/.test(f) && !listados.has(f));
+  if (esquecidos.length) console.warn('Aviso (bundle): fora da ORDEM de server/bundle.js, não entram em /js/app.js: ' + esquecidos.join(', '));
+}
+
 function compilar() {
+  avisarForaDaOrdem();
   const fontes = ORDEM.map((f) => '/* ' + f + ' */\n' + fs.readFileSync(path.join(RAIZ, f), 'utf8'));
   // Sem `format`: nomes de topo (classes, constantes) continuam globais, como nos scripts separados.
   return esbuild.transformSync(fontes.join('\n'), { loader: 'jsx', minify: true, target: 'es2020', legalComments: 'none' }).code;

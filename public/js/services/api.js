@@ -3,6 +3,13 @@ const Api = (function () {
   // O App registra aqui o que fazer quando o servidor diz que a sessão acabou (401 fora do login).
   const ganchos = { aoExpirar: null };
 
+  // O status HTTP acompanha o erro: a tela decide pelo número, não pelo texto da mensagem.
+  function erroHttp(mensagem, status) {
+    const erro = new Error(mensagem);
+    erro.status = status;
+    return erro;
+  }
+
   function requisitar(caminho, opcoes) {
     const o = opcoes || {};
     return fetch('/api' + caminho, {
@@ -14,9 +21,9 @@ const Api = (function () {
       return resposta.json().then((dados) => {
         if (resposta.status === 401 && ganchos.aoExpirar && caminho !== '/login' && caminho !== '/sessao') {
           ganchos.aoExpirar();
-          throw new Error('Sua sessão expirou. Entre novamente.');
+          throw erroHttp('Sua sessão expirou. Entre novamente.', 401);
         }
-        if (!resposta.ok) throw new Error(dados.erro || 'Erro ' + resposta.status);
+        if (!resposta.ok) throw erroHttp(dados.erro || 'Erro ' + resposta.status, resposta.status);
         return dados;
       });
     }, () => {
@@ -55,7 +62,8 @@ const Api = (function () {
     decidirSolicitacao: (id, status) => requisitar('/solicitacoes/' + id, { method: 'PATCH', corpo: { status } }),
     obterAluno: (matricula) => requisitar('/alunos/' + matricula),
     listarMatriculasDoAluno: (matricula) => requisitar('/alunos/' + matricula + '/matriculas'),
-    matricular: (alunoId, turmaId) => requisitar('/matriculas', { method: 'POST', corpo: { alunoId, turmaId } }),
+    // Só a turma: quem se matricula é o aluno da sessão, decidido pelo servidor.
+    matricular: (turmaId) => requisitar('/matriculas', { method: 'POST', corpo: { turmaId } }),
     cancelarMatricula: (id) => requisitar('/matriculas/' + id, { method: 'DELETE' }),
   };
 })();

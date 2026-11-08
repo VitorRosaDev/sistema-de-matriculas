@@ -3,7 +3,8 @@ const repo = require('../repositorio');
 const Validacao = require('../../public/js/shared/validacao.js');
 const Regras = require('../../public/js/shared/regras.js');
 const Auth = require('../autenticacao');
-const { ErroHttp } = require('../erros');
+const Normalizar = require('../normalizar');
+const { ErroHttp, exigirValido } = require('../erros');
 
 const router = express.Router();
 
@@ -11,15 +12,14 @@ const router = express.Router();
 function limpar(corpo) {
   return {
     codigo: corpo.codigo,
-    nome: typeof corpo.nome === 'string' ? corpo.nome.trim() : corpo.nome,
+    nome: Normalizar.aparar(corpo.nome),
     cargaHoraria: corpo.cargaHoraria,
     preRequisitos: Array.isArray(corpo.preRequisitos) ? [...new Set(corpo.preRequisitos)] : corpo.preRequisitos,
   };
 }
 
 async function validar(dados) {
-  const erros = Validacao.validarDisciplina(dados);
-  if (Validacao.temErros(erros)) throw new ErroHttp(400, Object.values(erros).join(' '));
+  exigirValido(Validacao.validarDisciplina(dados));
   const todas = await repo.listar('disciplinas');
   const r7 = Regras.verificarPreRequisitosValidos(dados.codigo, dados.preRequisitos, todas.map((d) => d.codigo), todas);
   if (!r7.ok) throw new ErroHttp(409, r7.motivos.join(' '));

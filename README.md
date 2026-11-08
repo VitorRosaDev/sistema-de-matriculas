@@ -69,7 +69,7 @@ public/              index.html, css/ e js/
   shared/            horario, validacao, regras, formatos (UMD: navegador e Node)
   services/api.js    fetch + Promises
   context/           SessaoContext
-  components/        Logo, Navbar, ErrorBoundary, Alerta, Campo, CardTurma, GradeHorario, BarraCarga...
+  components/        Logo, Navbar, ErrorBoundary, Alerta, Avisos (+ executarAcao), StatusSolicitacao, Campo, CardTurma, GradeHorario, BarraCarga...
   pages/             uma página por rota
   router.jsx, App.jsx
 ```
@@ -92,7 +92,7 @@ Os arquivos de `public/js/shared/` são UMD: o mesmo código roda no navegador (
 
 ## API REST
 
-Erros: `{ "erro": "mensagem" }` com 400 (formato), 401 (login), 404, 409 (regra de negócio) ou 500.
+Erros: `{ "erro": "mensagem" }` com 400 (formato), 401 (sem sessão ou login recusado), 403 (sem permissão, ou senha atual que não confere), 404, 409 (regra de negócio) ou 500. Com sessão aberta, a API nunca responde 401 por credencial errada: o front trata todo 401 fora do login como sessão expirada.
 
 | Método e rota | Resposta |
 |---|---|
@@ -104,7 +104,7 @@ Erros: `{ "erro": "mensagem" }` com 400 (formato), 401 (login), 404, 409 (regra 
 | `POST /api/alunos` (primeiro acesso: nome completo, endereço, nascimento, e-mail, celular, senha) | 201 `{matricula}` · 400 · 409 (e-mail repetido) |
 | `GET /api/alunos/:matricula`, `GET /api/alunos/:matricula/matriculas` | 200 · 404 (nunca devolve o hash da senha) |
 | `PUT /api/alunos/:matricula` (endereço, e-mail, celular) | 200 · 400 · 409 |
-| `PUT /api/alunos/:matricula/senha` `{senhaAtual, senhaNova}` | 204 · 400 · 401 |
+| `PUT /api/alunos/:matricula/senha` `{senhaAtual, senhaNova}` | 204 · 400 · 403 (senha atual não confere) |
 | `POST/GET /api/alunos/:matricula/solicitacoes` (nome ou dataNascimento) | 201/200 · 400 · 409 |
 | `GET /api/solicitacoes`, `PATCH /api/solicitacoes/:id` `{status: aprovada|recusada}` | 200 · 409 (já decidida) |
 | `POST /api/matriculas`, `DELETE /api/matriculas/:id` | 201/204 · 409 com os motivos |

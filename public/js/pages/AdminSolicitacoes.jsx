@@ -17,10 +17,7 @@ class AdminSolicitacoes extends React.Component {
   }
 
   decidir(s, status) {
-    this.setState({ erro: '', sucesso: '' });
-    Api.decidirSolicitacao(s.id, status)
-      .then(() => { this.setState({ sucesso: 'Solicitação de ' + s.alunoNome + (status === 'aprovada' ? ' aprovada.' : ' recusada.') }); return this.carregar(); })
-      .catch((e) => this.setState({ erro: e.message }));
+    executarAcao(this, Api.decidirSolicitacao(s.id, status), 'Solicitação de ' + s.alunoNome + (status === 'aprovada' ? ' aprovada.' : ' recusada.'));
   }
 
   formatar(s, valor) {
@@ -35,8 +32,7 @@ class AdminSolicitacoes extends React.Component {
     return (
       <div>
         <TituloPagina icone="bi-inbox" titulo="Solicitações de alteração" subtitulo="Nome e data de nascimento só mudam com a sua autorização." />
-        <Alerta tipo="danger" mensagem={erro} onFechar={() => this.setState({ erro: '' })} />
-        <Alerta tipo="success" mensagem={sucesso} onFechar={() => this.setState({ sucesso: '' })} />
+        <Avisos erro={erro} sucesso={sucesso} aoFechar={(aviso) => this.setState({ [aviso]: '' })} />
 
         {carregando ? <Carregando texto="Carregando solicitações…" /> : solicitacoes.length === 0 ? (
           <EstadoVazio icone="bi-inbox" titulo="Nenhuma solicitação" texto="Quando um aluno pedir para alterar nome ou data de nascimento, ela aparece aqui." />
@@ -72,7 +68,7 @@ class AdminSolicitacoes extends React.Component {
                           <td>{s.alunoNome}</td>
                           <td>{ROTULO_CAMPO[s.campo]}</td>
                           <td>{this.formatar(s, s.valorAtual)} → {this.formatar(s, s.valorNovo)}</td>
-                          <td><span className={'badge text-bg-' + COR_STATUS[s.status]}>{ROTULO_STATUS[s.status]}</span></td>
+                          <td><StatusSolicitacao status={s.status} /></td>
                         </tr>
                       ))}
                     </tbody>

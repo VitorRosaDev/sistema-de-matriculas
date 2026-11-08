@@ -31,4 +31,16 @@ async function turmasDetalhadas(semestre) {
     .sort((a, b) => a.codigo.localeCompare(b.codigo));
 }
 
-module.exports = { detalhar, turmasDetalhadas };
+// Uma turma só: lê por ID o que ela referencia, em vez de varrer as quatro coleções inteiras.
+async function turmaDetalhada(id) {
+  const turma = await repo.obter('turmas', id);
+  if (!turma) return null;
+  const [disciplina, professor, matriculas] = await Promise.all([
+    repo.obter('disciplinas', turma.disciplinaId),
+    repo.obter('professores', turma.professorId),
+    repo.buscarPor('matriculas', 'turmaId', turma.id),
+  ]);
+  return detalhar(turma, disciplina ? [disciplina] : [], professor ? [professor] : [], matriculas);
+}
+
+module.exports = { detalhar, turmasDetalhadas, turmaDetalhada };
