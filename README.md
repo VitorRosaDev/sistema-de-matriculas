@@ -69,7 +69,7 @@ public/              index.html, css/ e js/
   shared/            horario, validacao, regras, formatos (UMD: navegador e Node)
   services/api.js    fetch + Promises
   context/           SessaoContext
-  components/        Logo, Navbar, ErrorBoundary, Alerta, Campo, CardTurma, GradeHorario, BarraCarga...
+  components/        Logo, Navbar, ErrorBoundary, Alerta, Avisos (+ executarAcao), StatusSolicitacao, Campo, CardTurma, GradeHorario, BarraCarga...
   pages/             uma página por rota
   router.jsx, App.jsx
 ```
@@ -92,7 +92,7 @@ Os arquivos de `public/js/shared/` são UMD: o mesmo código roda no navegador (
 
 ## API REST
 
-Erros: `{ "erro": "mensagem" }` com 400 (formato), 401 (login), 404, 409 (regra de negócio) ou 500.
+Erros: `{ "erro": "mensagem" }` com 400 (formato), 401 (sem sessão ou login recusado), 403 (sem permissão, ou senha atual que não confere), 404, 409 (regra de negócio) ou 500. Com sessão aberta, a API nunca responde 401 por credencial errada: o front trata todo 401 fora do login como sessão expirada.
 
 | Método e rota | Resposta |
 |---|---|
