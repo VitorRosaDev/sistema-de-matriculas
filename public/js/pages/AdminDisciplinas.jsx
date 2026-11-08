@@ -52,10 +52,7 @@ class AdminDisciplinas extends React.Component {
 
   excluir(d) {
     if (!window.confirm('Excluir a disciplina ' + d.codigo + ' — ' + d.nome + '?')) return;
-    this.setState({ erro: '', sucesso: '' });
-    Api.excluirDisciplina(d.id)
-      .then(() => { this.setState({ sucesso: 'Disciplina ' + d.codigo + ' excluída.' }); return this.carregar(); })
-      .catch((e) => this.setState({ erro: e.message }));
+    executarAcao(this, Api.excluirDisciplina(d.id), 'Disciplina ' + d.codigo + ' excluída.');
   }
 
   aoEnviar(event) {
@@ -68,13 +65,9 @@ class AdminDisciplinas extends React.Component {
 
     this.setState({ enviando: true });
     const chamada = editandoId ? Api.atualizarDisciplina(editandoId, dados) : Api.criarDisciplina(dados);
-    chamada
-      .then(() => {
-        this.setState({ sucesso: 'Disciplina ' + dados.codigo + (editandoId ? ' atualizada.' : ' criada.'), editandoId: null, form: { ...FORM_DISCIPLINA_VAZIO } });
-        return this.carregar();
-      })
-      .catch((e) => this.setState({ erro: e.message }))
-      .finally(() => this.setState({ enviando: false }));
+    executarAcao(this, chamada, () => ({
+      sucesso: 'Disciplina ' + dados.codigo + (editandoId ? ' atualizada.' : ' criada.'), editandoId: null, form: { ...FORM_DISCIPLINA_VAZIO },
+    })).finally(() => this.setState({ enviando: false }));
   }
 
   render() {
@@ -85,8 +78,7 @@ class AdminDisciplinas extends React.Component {
     return (
       <div>
         <TituloPagina icone="bi-journal-bookmark" titulo="Disciplinas" subtitulo="Cadastre disciplinas e seus pré-requisitos." />
-        <Alerta tipo="danger" mensagem={erro} onFechar={() => this.setState({ erro: '' })} />
-        <Alerta tipo="success" mensagem={sucesso} onFechar={() => this.setState({ sucesso: '' })} />
+        <Avisos erro={erro} sucesso={sucesso} aoFechar={(aviso) => this.setState({ [aviso]: '' })} />
 
         <div className="row g-4">
           <div className="col-lg-4">

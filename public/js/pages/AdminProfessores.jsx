@@ -40,10 +40,7 @@ class AdminProfessores extends React.Component {
 
   excluir(p) {
     if (!window.confirm('Excluir o professor ' + p.nome + '?')) return;
-    this.setState({ erro: '', sucesso: '' });
-    Api.excluirProfessor(p.id)
-      .then(() => { this.setState({ sucesso: 'Professor ' + p.nome + ' excluído.' }); return this.carregar(); })
-      .catch((e) => this.setState({ erro: e.message }));
+    executarAcao(this, Api.excluirProfessor(p.id), 'Professor ' + p.nome + ' excluído.');
   }
 
   aoEnviar(event) {
@@ -56,13 +53,9 @@ class AdminProfessores extends React.Component {
 
     this.setState({ enviando: true });
     const chamada = editandoId ? Api.atualizarProfessor(editandoId, dados) : Api.criarProfessor(dados);
-    chamada
-      .then(() => {
-        this.setState({ sucesso: 'Professor ' + dados.nome + (editandoId ? ' atualizado.' : ' cadastrado.'), editandoId: null, form: { ...FORM_PROFESSOR_VAZIO } });
-        return this.carregar();
-      })
-      .catch((e) => this.setState({ erro: e.message }))
-      .finally(() => this.setState({ enviando: false }));
+    executarAcao(this, chamada, () => ({
+      sucesso: 'Professor ' + dados.nome + (editandoId ? ' atualizado.' : ' cadastrado.'), editandoId: null, form: { ...FORM_PROFESSOR_VAZIO },
+    })).finally(() => this.setState({ enviando: false }));
   }
 
   render() {
@@ -70,8 +63,7 @@ class AdminProfessores extends React.Component {
     return (
       <div>
         <TituloPagina icone="bi-person-workspace" titulo="Professores" subtitulo="Cadastre professores e defina a carga máxima de turmas por semestre." />
-        <Alerta tipo="danger" mensagem={erro} onFechar={() => this.setState({ erro: '' })} />
-        <Alerta tipo="success" mensagem={sucesso} onFechar={() => this.setState({ sucesso: '' })} />
+        <Avisos erro={erro} sucesso={sucesso} aoFechar={(aviso) => this.setState({ [aviso]: '' })} />
 
         <div className="row g-4">
           <div className="col-lg-4">

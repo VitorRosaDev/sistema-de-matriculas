@@ -9,7 +9,7 @@ const RAIZ = path.join(__dirname, '..', 'public', 'js');
 const ORDEM = [
   'shared/horario.js', 'shared/validacao.js', 'shared/regras.js', 'shared/formatos.js', 'services/api.js',
   'context/SessaoContext.jsx',
-  'components/Logo.jsx', 'components/Alerta.jsx', 'components/Estados.jsx', 'components/Campo.jsx', 'components/ErrorBoundary.jsx',
+  'components/Logo.jsx', 'components/Alerta.jsx', 'components/Avisos.jsx', 'components/StatusSolicitacao.jsx', 'components/Estados.jsx', 'components/Campo.jsx', 'components/ErrorBoundary.jsx',
   'components/Navbar.jsx', 'components/BarraCarga.jsx', 'components/GradeHorario.jsx', 'components/CardTurma.jsx',
   'pages/Login.jsx', 'pages/Cadastro.jsx', 'pages/AlunoPerfil.jsx', 'pages/AdminSolicitacoes.jsx', 'pages/AdminDisciplinas.jsx',
   'pages/AdminProfessores.jsx', 'pages/AdminTurmas.jsx', 'pages/AdminAlocacao.jsx', 'pages/AlunoOfertas.jsx', 'pages/AlunoGrade.jsx',

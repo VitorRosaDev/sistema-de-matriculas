@@ -1,7 +1,4 @@
-const ROTULO_CAMPO = { nome: 'Nome', dataNascimento: 'Data de nascimento' };
-const ROTULO_STATUS = { pendente: 'Aguardando a secretaria', aprovada: 'Aprovada', recusada: 'Recusada' };
-const COR_STATUS = { pendente: 'warning text-dark', aprovada: 'success', recusada: 'danger' };
-
+// ROTULO_CAMPO e StatusSolicitacao vêm de components/StatusSolicitacao.jsx (também usados por AdminSolicitacoes).
 // Meu cadastro. Endereço e contatos: edição livre. Nome e nascimento: só por solicitação. Senha: confirma a atual.
 class AlunoPerfil extends React.Component {
   static contextType = SessaoContext;
@@ -51,9 +48,7 @@ class AlunoPerfil extends React.Component {
     if (Validacao.temErros(errosContato)) return;
 
     this.setState({ salvandoContato: true });
-    Api.atualizarContato(this.context.usuario.id, dados)
-      .then(() => { this.setState({ sucesso: 'Dados de contato atualizados.' }); return this.carregar(); })
-      .catch((e) => this.setState({ erro: e.message }))
+    executarAcao(this, Api.atualizarContato(this.context.usuario.id, dados), 'Dados de contato atualizados.')
       .finally(() => this.setState({ salvandoContato: false }));
   }
 
@@ -138,8 +133,7 @@ class AlunoPerfil extends React.Component {
     return (
       <div>
         <TituloPagina icone="bi-person-circle" titulo="Meu cadastro" subtitulo="Atualize seus dados de contato e sua senha." />
-        <Alerta tipo="danger" mensagem={erro} onFechar={() => this.setState({ erro: '' })} />
-        <Alerta tipo="success" mensagem={sucesso} onFechar={() => this.setState({ sucesso: '' })} />
+        <Avisos erro={erro} sucesso={sucesso} aoFechar={(aviso) => this.setState({ [aviso]: '' })} />
 
         {carregando ? <Carregando texto="Carregando seu cadastro…" /> : !aluno ? null : (
           <div className="row g-4">
@@ -166,7 +160,7 @@ class AlunoPerfil extends React.Component {
                               {s.campo === 'dataNascimento' ? Formatos.data(s.valorAtual) + ' → ' + Formatos.data(s.valorNovo) : s.valorAtual + ' → ' + s.valorNovo}
                             </div>
                           </div>
-                          <span className={'badge text-bg-' + COR_STATUS[s.status]}>{ROTULO_STATUS[s.status]}</span>
+                          <StatusSolicitacao status={s.status} />
                         </li>
                       ))}
                     </ul>

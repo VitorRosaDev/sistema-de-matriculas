@@ -1,3 +1,20 @@
+// Fechar/reabrir e excluir uma turma: os mesmos botões na visão de grade e na de tabela.
+// O espaçamento fica com quem envolve os botões (gap-1).
+function AcoesTurma(props) {
+  const t = props.turma;
+  const aberta = t.status === 'aberta';
+  return (
+    <React.Fragment>
+      <button type="button" className="btn btn-outline-secondary btn-sm" onClick={props.onAlternar} aria-label={(aberta ? 'Fechar ' : 'Reabrir ') + t.codigo}>
+        <i className={'bi ' + (aberta ? 'bi-lock' : 'bi-unlock')} aria-hidden="true"></i>
+      </button>
+      <button type="button" className="btn btn-outline-danger btn-sm" onClick={props.onExcluir} aria-label={'Excluir ' + t.codigo}>
+        <i className="bi bi-trash" aria-hidden="true"></i>
+      </button>
+    </React.Fragment>
+  );
+}
+
 // UC03 — montar a oferta de turmas e ver a grade (dia × turno).
 class AdminTurmas extends React.Component {
   constructor(props) {
@@ -45,29 +62,22 @@ class AdminTurmas extends React.Component {
     if (Validacao.temErros(erros)) return;
 
     this.setState({ enviando: true });
-    Api.criarTurma(dados)
-      .then((t) => {
-        this.setState({ sucesso: 'Turma ' + t.codigo + ' ofertada.' });
-        return this.carregar();
-      })
-      .catch((e) => this.setState({ erro: e.message }))
+    executarAcao(this, Api.criarTurma(dados), (criada) => 'Turma ' + criada.codigo + ' ofertada.')
       .finally(() => this.setState({ enviando: false }));
   }
 
   alternarStatus(t) {
     const novo = t.status === 'aberta' ? 'fechada' : 'aberta';
-    this.setState({ erro: '', sucesso: '' });
-    Api.alterarStatusTurma(t.id, novo)
-      .then(() => { this.setState({ sucesso: 'Turma ' + t.codigo + (novo === 'fechada' ? ' fechada.' : ' reaberta.') }); return this.carregar(); })
-      .catch((e) => this.setState({ erro: e.message }));
+    executarAcao(this, Api.alterarStatusTurma(t.id, novo), 'Turma ' + t.codigo + (novo === 'fechada' ? ' fechada.' : ' reaberta.'));
   }
 
   excluir(t) {
     if (!window.confirm('Excluir a turma ' + t.codigo + '?')) return;
-    this.setState({ erro: '', sucesso: '' });
-    Api.excluirTurma(t.id)
-      .then(() => { this.setState({ sucesso: 'Turma ' + t.codigo + ' excluída.' }); return this.carregar(); })
-      .catch((e) => this.setState({ erro: e.message }));
+    executarAcao(this, Api.excluirTurma(t.id), 'Turma ' + t.codigo + ' excluída.');
+  }
+
+  renderizarAcoes(t) {
+    return <AcoesTurma turma={t} onAlternar={() => this.alternarStatus(t)} onExcluir={() => this.excluir(t)} />;
   }
 
   renderizarTurma(t) {
@@ -80,15 +90,7 @@ class AdminTurmas extends React.Component {
           <span className="badge text-bg-secondary">{t.ocupadas}/{t.vagas} alunos</span>
           {t.status === 'fechada' && <span className="badge text-bg-warning text-dark">Fechada</span>}
         </div>
-        <div className="d-flex gap-1">
-          <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => this.alternarStatus(t)}
-            aria-label={(t.status === 'aberta' ? 'Fechar ' : 'Reabrir ') + t.codigo}>
-            <i className={'bi ' + (t.status === 'aberta' ? 'bi-lock' : 'bi-unlock')} aria-hidden="true"></i>
-          </button>
-          <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => this.excluir(t)} aria-label={'Excluir ' + t.codigo}>
-            <i className="bi bi-trash" aria-hidden="true"></i>
-          </button>
-        </div>
+        <div className="d-flex gap-1">{this.renderizarAcoes(t)}</div>
       </div>
     );
   }
@@ -109,8 +111,7 @@ class AdminTurmas extends React.Component {
     return (
       <div>
         <TituloPagina icone="bi-calendar3" titulo={'Oferta de turmas — ' + Horario.SEMESTRE_ATUAL} subtitulo="Monte a oferta do semestre e acompanhe a grade de horários." />
-        <Alerta tipo="danger" mensagem={erro} onFechar={() => this.setState({ erro: '' })} />
-        <Alerta tipo="success" mensagem={sucesso} onFechar={() => this.setState({ sucesso: '' })} />
+        <Avisos erro={erro} sucesso={sucesso} aoFechar={(aviso) => this.setState({ [aviso]: '' })} />
 
         <div className="row g-4">
           <div className="col-lg-4">
@@ -204,15 +205,7 @@ class AdminTurmas extends React.Component {
                         <td>{t.horarioTexto}</td>
                         <td>{t.ocupadas}/{t.vagas}</td>
                         <td><span className={'badge ' + (t.status === 'aberta' ? 'text-bg-success' : 'text-bg-secondary')}>{t.status === 'aberta' ? 'Aberta' : 'Fechada'}</span></td>
-                        <td className="text-end text-nowrap">
-                          <button type="button" className="btn btn-outline-secondary btn-sm me-1" onClick={() => this.alternarStatus(t)}
-                            aria-label={(t.status === 'aberta' ? 'Fechar ' : 'Reabrir ') + t.codigo}>
-                            <i className={'bi ' + (t.status === 'aberta' ? 'bi-lock' : 'bi-unlock')} aria-hidden="true"></i>
-                          </button>
-                          <button type="button" className="btn btn-outline-danger btn-sm" onClick={() => this.excluir(t)} aria-label={'Excluir ' + t.codigo}>
-                            <i className="bi bi-trash" aria-hidden="true"></i>
-                          </button>
-                        </td>
+                        <td className="text-end text-nowrap"><div className="d-inline-flex gap-1">{this.renderizarAcoes(t)}</div></td>
                       </tr>
                     ))}
                   </tbody>
