@@ -1,0 +1,8 @@
+# Quebra de linha LF no repositório, qualquer que seja o sistema de quem clonar.
+* text=auto eol=lf
+
+# Binários: nunca converter.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.figcraft binary

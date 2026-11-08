@@ -1,0 +1,24 @@
+{
+  "name": "matriculas-unisinos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de Atendimento e Matrículas (Desafio Front-End Unisinos)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node seed.js",
+    "check": "node scripts/check-firebase.js",
+    "test": "node scripts/testar-regras.js",
+    "test:seguranca": "node scripts/testar-seguranca.js"
+  },
+  "type": "commonjs",
+  "dependencies": {
+    "compression": "^1.8.2",
+    "esbuild": "^0.28.2",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.2",
+    "firebase-admin": "^14.5.0",
+    "helmet": "^8.3.0"
+  }
+}
