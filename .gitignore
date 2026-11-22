@@ -29,3 +29,7 @@ Desktop.ini
 /2026-11-11-193101-leia-o-contedo-de-cdevprojetofrontendunisino.txt
 /docs/roteiro-video.md
 /docs/roteiro-video.pdf
+
+# Testes de interface (Playwright)
+test-results/
+playwright-report/
